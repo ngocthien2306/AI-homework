@@ -161,7 +161,9 @@ class MainWindow(QMainWindow):
                 button = QPushButton("", self)
                 button.setGeometry(x_axis, y_axis, 51, 51)
                 button.setStyleSheet(u"background-color: white")
+
                 x_axis += 50
+
 
         self.show()
     def show_board(self):
