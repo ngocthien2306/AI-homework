@@ -13,7 +13,7 @@ from collections import deque
 import numpy as np
 import random as rd
 import time
-from timeit import  default_timer as timer
+from timeit import default_timer as timer
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -130,7 +130,6 @@ class MainWindow(QMainWindow):
         x = []
         y = []
         for i in range(self.no_of_queens):
-
             x.append(0)
             for j in range(self.no_of_queens):
                 y.append(x)
@@ -141,7 +140,7 @@ class MainWindow(QMainWindow):
         chess_board[1::2, 0::2] = 1  # gán ô theo hàng dọc xen kẽ giữa các ô
         for i in range(self.no_of_queens):
             # set position of queens
-            chess_board[i ,result1[i]] = -1
+            chess_board[i, result1[i]] = -1
 
         print(chess_board)
 

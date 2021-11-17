@@ -1,4 +1,4 @@
-# Solve N-queens problem using Min-conflicts algorithm
+﻿# Solve N-queens problem using Min-conflicts algorithm
 '''
 YOUR TASKS:
 1. Read to understand the following code 
@@ -9,6 +9,12 @@ YOUR TASKS:
 import random
 
 #%% Utilities:
+from itertools import count, chain
+import numpy as np
+import sys
+from timeit import  default_timer as timer
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 def argmin_random_tie(seq, key=lambda x: x):
     """Return a minimum element of seq; break ties at random."""
     items = list(seq)
@@ -146,17 +152,33 @@ class NQueensCSP(CSP):
 ''' READ AND COMMENT to show your comprehensive understanding of the following function '''
 def min_conflicts(csp, max_steps=100000):
     """See Figure 6.8 for the algorithm"""
+    # Em đã chạy debug để hiểu hơn vể chức năng của các function và thuật toán
     csp.current = current = {}
+    # Khơi tạo biến current để lưu lại các kết quả sau mỗi lần iterate rang(max_steps)
     for var in csp.variables:
+        # Lấy biến (var) lần lượt từ 0 đến n-queens để thực hiện công việc tìm value
+        # nào sẽ có xung đột thấp nhất
         val = min_conflicts_value(csp, var, current)
+        # Sau khi tìm được min conflict value thì ta sẽ gán biến và giá trị vào current
+        # (ví dụ {0: 7, 1: 1, 2: 3, 3: 5, 4: 0, 5: 2, 6: 4, 7: 6} value = {7, 1, 3, 5, 0, 2, 4, 6}
+        #         1     0     0     0     0     1     0     0
+        # Kết quả thu được khi debug iterate 25 8-queens
         csp.assign(var, val, current)
-    
+        # Gán var val
     for i in range(max_steps):
+        # Lập cho đến khi có kết quả hoặc i == max_steps
         conflicted = csp.conflicted_vars(current)
+        # Conflicted sẽ trải qua 2 function trung gian để kiểm tra biến trùng
+        # nconflicted() và conflicted_vars()
+        # Lấy vị trí các biến có conflicted như ví dụ trên thì ta có var = {0, 5}
         if not conflicted:
+            # Khi có các vị trí ta kiểm tra xem, nếu current = rỗng thì kết thúc thuật toán -> solution
             return current
         var = random.choice(conflicted)
+        # nếu current không rỗng thì ta sẽ random chọn biến
         val = min_conflicts_value(csp, var, current)
+        # Sau đó ta tiếp tục thực hiện tìm giá trị conflicts nhỏ nhất và gán vào current
+        # Thuật toán sẽ dừng khi tìm ra solution hoặc i == max_steps
         csp.assign(var, val, current)
     return None
 
@@ -165,9 +187,70 @@ def min_conflicts_value(csp, var, current):
     If there is a tie, choose at random."""
     return argmin_random_tie(csp.domains[var], key=lambda val: csp.nconflicts(var, val, current))
 
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super(MainWindow, self).__init__()
+        self.setWindowTitle("8-queens")
+        self.setGeometry(10, 30, 1350, 1000)
+        self.n_queens = 0
 
+    def show_board(self, solution, nQ):
+        self.n_queens = nQ
+        label = QLabel("Wellcome guy", self)
+        label.setGeometry(1100, 20, 200, 50)
+        label.setFont(QFont('Roboto', 12))
+        button_play = QPushButton("Play game", self)
+        button_play.setGeometry(1100, 80, 200, 50)
+        #button_play.clicked.connect(self.game_play)
+        button_play = QPushButton("Reset", self)
+        button_play.setGeometry(1100, 132, 200, 50)
+        #button_play.clicked.connect(self.reset)
+        y_axis = -10
+        for x in range(self.n_queens):
+            x_axis = 20
+            y_axis += 12
+
+            for y in range(self.n_queens):
+
+                button = QPushButton("", self)
+                button.setGeometry(x_axis, y_axis, 13, 13)
+                x_axis += 12
+                if solution[x][y] == -1:
+                    button.setStyleSheet(u"background-color: rgb(52, 152, 219)")
+                    #button.setIcon(QIcon("NguyenNgocThien_19110148_Week8_img_queens.png"))
+                else:
+                    button.setStyleSheet(u"background-color: white")
+        self.show()
+
+def boards(domains, n_queens):
+    de_board = []
+    for i in domains:
+        de_board.append(domains[i])
+    x = []
+    y = []
+    for i in range(n_queens):
+        x.append(0)
+        for j in range(n_queens):
+            y.append(x)
+    board = np.array(y)
+    chess_board = board[0:n_queens:1]
+    # create black and white button
+    chess_board[0::2, 1::2] = 1  # gán ô theo hàng ngang xen kẽ giữa các ô
+    chess_board[1::2, 0::2] = 1  # gán ô theo hàng dọc xen kẽ giữa các ô
+    for i in range(n_queens):
+        # set position of queens
+        chess_board[domains[i], i] = -1
+    return chess_board
 #%% main
-if __name__ == '__main__':      
-    problem = NQueensCSP(n=100)
-    min_conflicts(problem, max_steps=100000); 
-    print(problem.current);
+if __name__ == '__main__':
+    # Do em không biết tại sao khi load 100*100 thì màng hình thì nó tự động tắt
+    # nên em recommend nên set 80 quân hậu là chạy GUI/UI ok nhất ạ
+    problem = NQueensCSP(n=80)
+    min_conflicts(problem, max_steps=100000)
+    print(problem.current)
+    check = boards(problem.current, 80)
+    print(check)
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show_board(check, 80)
+    sys.exit(app.exec())
