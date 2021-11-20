@@ -2,17 +2,30 @@
 
 import gym
 import numpy as np
-
 import torch 
 import torch.nn as nn
 import torch.optim as optim
 import time
 from collections import namedtuple
 
+# Khởi tạo các Hidden_size (số lượng neural), Batch_size (số lượng episole)
+# và Percentile (bao nhiêu phần trăm nhỏ hơn n episole)
+# MISSING CODE HERE
 model = 3
 if model == 1:
-	# MISSING CODE HERE
+    HIDDEN_SIZE = 128
+    BATCH_SIZE = 16
+    PERCENTILE = 70
 
+if model == 2:
+    HIDDEN_SIZE = 80
+    BATCH_SIZE = 10
+    PERCENTILE = 90
+
+if model == 3:
+    HIDDEN_SIZE = 100
+    BATCH_SIZE = 20
+    PERCENTILE = 75
 
 
 class Net(nn.Module):
@@ -22,18 +35,17 @@ class Net(nn.Module):
             nn.Linear(obs_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, n_actions)
-
             )
 
     def forward(self, x):
-        return self.net(x);
+        return self.net(x)
 
 Episode = namedtuple('Episode', field_names = ['reward', 'steps'])
 EpisodeStep = namedtuple('EpisodeStep', field_names = ['observation', 'action'])
 
 def get_batches(env, net, batch_size):
+
     batch = []
-    
     episode_reward = 0.0
     episode_steps = []
 
@@ -48,15 +60,16 @@ def get_batches(env, net, batch_size):
         action = np.random.choice(len(act_probs), p=act_probs)
         
         # MISSING CODE HERE
-		
+		next_obs, reward, done, info = env.step(action)
         episode_reward += reward
         step = EpisodeStep(observation=obs, action=action)           
         episode_steps.append(step)
 
         if is_done:
             # MISSING CODE HERE
-			batch.append(episode)
-            
+            episole = Episode(reward=episode_reward, steps=episode_steps)
+
+			batch.append(episole)
             episode_reward = 0.0
             episode_steps = []                  
             next_obs = env.reset()
@@ -76,18 +89,19 @@ def filter_batch(batch, percentile):
     train_obs = []
     train_act = []
     for reward, steps in batch:
-        if # MISSING CODE HERE:
+        if reward < reward_bound: # MISSING CODE HERE:
             continue
         train_obs.extend(map(lambda step: step.observation, steps))
         train_act.extend(map(lambda step: step.action, steps))
 
     train_obs_v = torch.FloatTensor(train_obs)
     train_act_v = torch.LongTensor(train_act)
-    return # MISSING CODE HERE
+    return train_obs_v, train_act_v, reward_bound, reward_mean # MISSING CODE HERE
 
 if __name__ == "__main__":
     # MISSING CODE HERE
-    
+    env = gym.make("")
+
     #train_mode = True
     train_mode = False
     if train_mode:
@@ -99,7 +113,8 @@ if __name__ == "__main__":
         optimizer = optim.Adam(params=net.parameters(), lr=0.01)
 
         for iter_no, batch in enumerate(get_batches(env, net, BATCH_SIZE)):
-            obs_v, acts_v, reward_b, reward_m = # MISSING CODE HERE
+
+            obs_v, acts_v, reward_b, reward_m = env.step() # MISSING CODE HERE
             
             optimizer.zero_grad()
             action_scores_v = net(obs_v)
@@ -121,6 +136,7 @@ if __name__ == "__main__":
         env = gym.wrappers.Monitor(env, directory="solved_cartpole", force=True)
         # MISSING CODE HERE
 
+
         net = torch.load('trained_net_' + str(HIDDEN_SIZE) + 'neurons.pt')
         sm = nn.Softmax(dim=1)
 
@@ -133,6 +149,7 @@ if __name__ == "__main__":
             action = np.random.choice(len(act_probs), p=act_probs)
 
             # MISSING CODE HERE
+            obs, reward, done, info = env.step(action)
             
             env.render()
             time.sleep(0.01)

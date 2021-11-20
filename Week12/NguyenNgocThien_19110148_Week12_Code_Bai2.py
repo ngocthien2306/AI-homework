@@ -1,4 +1,5 @@
 import gym
+from Box2D import *
 import time
 import gym.envs.box2d
 import random
@@ -91,7 +92,8 @@ def choice_env(index):
         5: "FrozenLake8x8-v1",
         6: "Assault-ram-v0",
         7: "Breakout-v0",
-        8: "Skiing-ram-v0"
+        8: "Skiing-ram-v0",
+        9: "LunarLander-v2"
     }
     return switcher[index]
 
@@ -105,7 +107,7 @@ if __name__ == "__main__":
     5 - FrozenLake8x8-v1
     6 - Assault-ram-v0
     7 - Breakout-v0
-    8 - "Skiing-ram-v0"
+    8 - Skiing-ram-v0
     """)
 
     choice = int(input("Please choose the environment you want to test: "))
